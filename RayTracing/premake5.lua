@@ -1,7 +1,7 @@
-project "WalnutApp"
+project "RayTracing"
    kind "ConsoleApp"
    language "C++"
-   cppdialect "C++17"
+   cppdialect "C++20"
    targetdir "bin/%{cfg.buildcfg}"
    staticruntime "off"
 
@@ -9,6 +9,8 @@ project "WalnutApp"
 
    includedirs
    {
+      "src",
+
       "../Walnut/vendor/imgui",
       "../Walnut/vendor/glfw/include",
       "../Walnut/vendor/glm",
