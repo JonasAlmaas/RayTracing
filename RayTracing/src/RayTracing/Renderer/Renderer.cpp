@@ -5,6 +5,20 @@
 
 namespace RayTracing {
 
+	namespace Utils {
+
+		static uint32_t ConvertToRGBA8(const glm::vec4& color)
+		{
+			uint8_t r = (uint8_t)(color.r * 255);
+			uint8_t g = (uint8_t)(color.g * 255);
+			uint8_t b = (uint8_t)(color.b * 255);
+			uint8_t a = (uint8_t)(color.a * 255);
+
+			return r | (g << 8) | (b << 16) | (a << 24);
+		}
+
+	}
+
 	void Renderer::OnResize(uint32_t width, uint32_t height)
 	{
 		if (m_FinalImage)
@@ -32,14 +46,17 @@ namespace RayTracing {
 			{
 				glm::vec2 coord = { (float)x / (float)m_FinalImage->GetWidth(), (float)y / (float)m_FinalImage->GetHeight() };
 				coord = coord * 2.0f - 1.0f; // Remap from 0 -> 1 to -1 to 1;
-				m_ImageData[x + y * m_FinalImage->GetWidth()] = PerPixel(coord);
+
+				glm::vec4 colorFloat = PerPixel(coord);
+				colorFloat = glm::clamp(colorFloat, glm::vec4(0.0f), glm::vec4(1.0f));
+				m_ImageData[x + y * m_FinalImage->GetWidth()] = Utils::ConvertToRGBA8(colorFloat);
 			}
 		}
 
 		m_FinalImage->SetData(m_ImageData);
 	}
 
-	uint32_t Renderer::PerPixel(glm::vec2 coord)
+	glm::vec4 Renderer::PerPixel(glm::vec2 coord)
 	{
 		uint8_t r = (uint8_t)(coord.x * 255.0f);
 		uint8_t g = (uint8_t)(coord.y * 255.0f);
@@ -63,12 +80,27 @@ namespace RayTracing {
 		// Quadratic formula discriminant:
 		// b^2 - 4ac
 
+		// (-b +- sqrt(discriminant)) / 2a
+
 		float discriminant = b * b - 4.0f * a * c;
+		if (discriminant < 0)
+			return glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
-		if (discriminant >= 0)
-			return 0xffff00ff;
+		//float t0 = (-b + glm::sqrt(discriminant)) / 2.0f * a;
+		float closestT = (-b - glm::sqrt(discriminant)) / 2.0f * a;
 
-		return 0xff000000;
+		glm::vec3 hitPoint = rayOrigin + rayDirection * closestT;
+		glm::vec3 normal = glm::normalize(hitPoint);
+
+		glm::vec3 lightDir = glm::normalize(glm::vec3(-1, -1, -1));
+
+		float d = glm::max(glm::dot(normal, -lightDir), 0.0f);
+
+		glm::vec3 sphereColor(0.8f, 0.3f, 0.2f);
+		sphereColor *= d;
+		//sphereColor = normal * 0.5f + 0.5f;
+
+		return glm::vec4(sphereColor, 1.0f);
 	}
 
 }
