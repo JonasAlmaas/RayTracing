@@ -5,6 +5,16 @@
 
 
 namespace RayTracing {
+	
+	MainLayer::MainLayer()
+		: m_Camera(45.0f, 0.1f, 100.0f)
+	{
+	}
+
+	void MainLayer::OnUpdate(float ts)
+	{
+		m_Camera.OnUpdate(ts);
+	}
 
 	void MainLayer::OnUIRender()
 	{
@@ -50,7 +60,8 @@ namespace RayTracing {
 		Walnut::Timer renderTimer;
 
 		m_Renderer.OnResize(m_ViewportWidth, m_ViewportHeight);
-		m_Renderer.Render();
+		m_Camera.OnResize(m_ViewportWidth, m_ViewportHeight);
+		m_Renderer.Render(m_Camera);
 
 		m_LastRenderTime = renderTimer.ElapsedMillis();
 	}

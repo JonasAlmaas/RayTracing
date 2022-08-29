@@ -2,6 +2,7 @@
 
 #include <Walnut/Layer.h>
 
+#include "RayTracing/Camera/Camera.h"
 #include "RayTracing/Renderer/Renderer.h"
 
 
@@ -10,6 +11,9 @@ namespace RayTracing {
 	class MainLayer : public Walnut::Layer
 	{
 	public:
+		MainLayer();
+
+		virtual void OnUpdate(float ts) override;
 		virtual void OnUIRender() override;
 
 	private:
@@ -19,6 +23,7 @@ namespace RayTracing {
 
 	private:
 		Renderer m_Renderer;
+		Camera m_Camera;
 
 		uint32_t m_ViewportWidth = 0;
 		uint32_t m_ViewportHeight = 0;

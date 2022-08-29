@@ -37,17 +37,18 @@ namespace RayTracing {
 		m_ImageData = new uint32_t[width * height];
 	}
 
-	void Renderer::Render()
+	void Renderer::Render(const Camera& camera)
 	{
+		Ray ray;
+		ray.Origin = camera.GetPosition();
+
 		// Y firt to save on CPU cache
 		for (uint32_t y = 0; y < m_FinalImage->GetHeight(); y++)
 		{
 			for (uint32_t x = 0; x < m_FinalImage->GetWidth(); x++)
 			{
-				glm::vec2 coord = { (float)x / (float)m_FinalImage->GetWidth(), (float)y / (float)m_FinalImage->GetHeight() };
-				coord = coord * 2.0f - 1.0f; // Remap from 0 -> 1 to -1 to 1;
-
-				glm::vec4 colorFloat = PerPixel(coord);
+				ray.Direction = camera.GetRayDirections()[x + y * m_FinalImage->GetWidth()];
+				glm::vec4 colorFloat = TraceRay(ray);
 				colorFloat = glm::clamp(colorFloat, glm::vec4(0.0f), glm::vec4(1.0f));
 				m_ImageData[x + y * m_FinalImage->GetWidth()] = Utils::ConvertToRGBA8(colorFloat);
 			}
@@ -56,14 +57,8 @@ namespace RayTracing {
 		m_FinalImage->SetData(m_ImageData);
 	}
 
-	glm::vec4 Renderer::PerPixel(glm::vec2 coord)
+	glm::vec4 Renderer::TraceRay(const Ray& ray)
 	{
-		uint8_t r = (uint8_t)(coord.x * 255.0f);
-		uint8_t g = (uint8_t)(coord.y * 255.0f);
-
-		glm::vec3 rayOrigin{ 0.0f, 0.0f, 2.0f };
-		glm::vec3 rayDirection{ coord.x, coord.y, -1.0f };
-		//rayDirection = glm::normalize(rayDirection);
 		float radius = 0.5f;
 
 		// (b.x^2 + b.y^2) * t^2 + (2(a.x * b.x + a.y * b.y)) * t + (a.x^2 + a.y^2 - r^2) = 0
@@ -73,9 +68,9 @@ namespace RayTracing {
 		// r = radius on sphere
 		// t = hit distance
 
-		float a = glm::dot(rayDirection, rayDirection);
-		float b = 2 * glm::dot(rayOrigin, rayDirection);
-		float c = glm::dot(rayOrigin, rayOrigin) - radius * radius;
+		float a = glm::dot(ray.Direction, ray.Direction);
+		float b = 2 * glm::dot(ray.Origin, ray.Direction);
+		float c = glm::dot(ray.Origin, ray.Origin) - radius * radius;
 
 		// Quadratic formula discriminant:
 		// b^2 - 4ac
@@ -89,7 +84,7 @@ namespace RayTracing {
 		//float t0 = (-b + glm::sqrt(discriminant)) / 2.0f * a;
 		float closestT = (-b - glm::sqrt(discriminant)) / 2.0f * a;
 
-		glm::vec3 hitPoint = rayOrigin + rayDirection * closestT;
+		glm::vec3 hitPoint = ray.Origin + ray.Direction * closestT;
 		glm::vec3 normal = glm::normalize(hitPoint);
 
 		glm::vec3 lightDir = glm::normalize(glm::vec3(-1, -1, -1));
