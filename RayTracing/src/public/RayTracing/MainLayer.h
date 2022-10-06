@@ -2,8 +2,8 @@
 
 #include <Walnut/Layer.h>
 
-#include "RayTracing/Camera/Camera.h"
-#include "RayTracing/Renderer/Renderer.h"
+#include "RayTracing/Camera.h"
+#include "RayTracing/Renderer.h"
 
 
 namespace RayTracing {

@@ -9,7 +9,7 @@ project "RayTracing"
 
    includedirs
    {
-      "src",
+      "src/public",
 
       "../Walnut/vendor/imgui",
       "../Walnut/vendor/glfw/include",

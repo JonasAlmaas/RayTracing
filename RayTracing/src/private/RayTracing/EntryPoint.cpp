@@ -1,7 +1,7 @@
 #include <Walnut/Application.h>
 #include <Walnut/EntryPoint.h>
 
-#include "RayTracing/Layer/MainLayer/MainLayer.h"
+#include "RayTracing/MainLayer.h"
 
 
 Walnut::Application* Walnut::CreateApplication(int argc, char** argv)

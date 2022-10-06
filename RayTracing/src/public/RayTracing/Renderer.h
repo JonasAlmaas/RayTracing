@@ -1,6 +1,6 @@
 #pragma once
 
-#include "RayTracing/Camera/Camera.h"
+#include "RayTracing/Camera.h"
 #include "RayTracing/Ray.h"
 
 #include <Walnut/Image.h>

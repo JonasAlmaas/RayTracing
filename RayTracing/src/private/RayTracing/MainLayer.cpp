@@ -1,4 +1,4 @@
-#include "RayTracing/Layer/MainLayer/MainLayer.h"
+#include "RayTracing/MainLayer.h"
 
 #include <Walnut/Timer.h>
 #include <imgui.h>

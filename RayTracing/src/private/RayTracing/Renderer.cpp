@@ -1,4 +1,4 @@
-#include "RayTracing/Renderer/Renderer.h"
+#include "RayTracing/Renderer.h"
 
 #include <Walnut/Random.h>
 
@@ -61,8 +61,8 @@ namespace RayTracing {
 	{
 		float radius = 0.5f;
 
-		// (b.x^2 + b.y^2) * t^2 + (2(a.x * b.x + a.y * b.y)) * t + (a.x^2 + a.y^2 - r^2) = 0
-
+		// (bx^2 + by^2 + bz^2) * t^2 + (2(axbx + ayby + azbz)) * t + (ax^2 + ay^2 + az^2 - r^2) = 0
+		
 		// a = ray origin
 		// b = ray direction
 		// r = radius on sphere
