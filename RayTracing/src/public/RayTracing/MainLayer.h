@@ -23,6 +23,7 @@ namespace RayTracing {
 
 	private:
 		Renderer m_Renderer;
+		Scene m_Scene;
 		Camera m_Camera;
 
 		uint32_t m_ViewportWidth = 0;

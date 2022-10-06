@@ -2,6 +2,7 @@
 
 #include "RayTracing/Camera.h"
 #include "RayTracing/Ray.h"
+#include "RayTracing/Scene.h"
 
 #include <Walnut/Image.h>
 
@@ -17,12 +18,12 @@ namespace RayTracing {
 		Renderer() = default;
 
 		void OnResize(uint32_t width, uint32_t height);
-		void Render(const Camera& camera);
+		void Render(const Scene& scene, const Camera& camera);
 
 		std::shared_ptr<Walnut::Image> GetFinalImage() const { return m_FinalImage; }
 
 	private:
-		glm::vec4 TraceRay(const Ray& ray);
+		glm::vec4 TraceRay(const Scene& scene, const Ray& ray);
 
 	private:
 		std::shared_ptr<Walnut::Image> m_FinalImage;
