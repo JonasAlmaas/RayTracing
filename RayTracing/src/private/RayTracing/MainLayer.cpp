@@ -55,7 +55,6 @@ namespace RayTracing {
 
 		ImGui::End();
 
-
 		ImGui::Begin("Scene");
 
 		for (size_t i = 0; i < m_Scene.Spheres.size(); i++)
@@ -88,6 +87,11 @@ namespace RayTracing {
 		{
 			RenderImage();
 		}
+		
+		ImGui::Separator();
+
+		ImGui::DragInt("Bounces", &m_Renderer.m_Bounces, 1.0f, 1, 10);
+
 		ImGui::End();
 	}
 

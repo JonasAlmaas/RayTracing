@@ -67,8 +67,7 @@ namespace RayTracing {
 
 		float multiplier = 1.0f;
 
-		uint32_t bounces = 2;
-		for (uint32_t i = 0; i < bounces; i++)
+		for (uint32_t i = 0; i < m_Bounces; i++)
 		{
 			HitPayload payload = TraceRay(ray);
 

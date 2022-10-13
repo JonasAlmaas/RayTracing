@@ -39,6 +39,9 @@ namespace RayTracing {
 		HitPayload ClosestHit(const Ray& ray, float hitDistance, uint32_t objectIndex);
 		HitPayload Miss(const Ray& ray);
 
+	public:
+		int m_Bounces = 4;
+
 	private:
 		const Scene* m_ActiveScene = nullptr;
 		const Camera* m_ActiveCamera = nullptr;
