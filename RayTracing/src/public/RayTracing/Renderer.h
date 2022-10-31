@@ -2,7 +2,7 @@
 
 #include "RayTracing/Camera.h"
 #include "RayTracing/Ray.h"
-#include "RayTracing/Scene.h"
+#include "RayTracing/Objects.h"
 
 #include <Walnut/Image.h>
 
