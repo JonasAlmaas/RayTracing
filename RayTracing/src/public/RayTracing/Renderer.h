@@ -24,6 +24,11 @@ namespace RayTracing {
 			uint32_t OjectIndex;
 		};
 
+		struct Settings
+		{
+			bool Accumulate = true;
+		};
+
 	public:
 		Renderer() = default;
 
@@ -31,6 +36,10 @@ namespace RayTracing {
 		void Render(const Scene& scene, const Camera& camera);
 
 		std::shared_ptr<Walnut::Image> GetFinalImage() const { return m_FinalImage; }
+
+		void ResetAccumulationFrame() { m_AccumulationFrame = 1; }
+
+		Settings& GetSettings() { return m_Settings; }
 
 	private:
 		glm::vec4 RayGen(uint32_t x, uint32_t y);
@@ -43,11 +52,16 @@ namespace RayTracing {
 		int m_Bounces = 4;
 
 	private:
+		std::shared_ptr<Walnut::Image> m_FinalImage;
+		Settings m_Settings;
+
 		const Scene* m_ActiveScene = nullptr;
 		const Camera* m_ActiveCamera = nullptr;
 
-		std::shared_ptr<Walnut::Image> m_FinalImage;
 		uint32_t* m_ImageData = nullptr;
+		glm::vec4* m_AccumulationData = nullptr;
+		
+		uint32_t m_accumulationFrame = 1;
 
 	};
 

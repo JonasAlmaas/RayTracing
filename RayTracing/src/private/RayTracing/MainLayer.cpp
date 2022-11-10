@@ -43,7 +43,8 @@ namespace RayTracing {
 
 	void MainLayer::OnUpdate(float ts)
 	{
-		m_Camera.OnUpdate(ts);
+		if (m_Camera.OnUpdate(ts))
+			m_Renderer.ResetAccumulationFrame();
 	}
 
 	void MainLayer::OnUIRender()
@@ -72,14 +73,16 @@ namespace RayTracing {
 
 		ImGui::Begin("Scene");
 
+		bool resetAccumulationFrame = false;
+
 		for (size_t i = 0; i < m_Scene.Spheres.size(); i++)
 		{
 			ImGui::PushID(i);
 
 			Sphere& sphere = m_Scene.Spheres[i];
-			ImGui::DragFloat3("Position", glm::value_ptr(sphere.Position), 0.01f);
-			ImGui::DragFloat("Radius", &sphere.Radius, 0.01f);
-			ImGui::DragInt("Material", &sphere.MaterialIndex, 1, 0, m_Scene.Materials.size() - 1);
+			resetAccumulationFrame |= ImGui::DragFloat3("Position", glm::value_ptr(sphere.Position), 0.01f);
+			resetAccumulationFrame |= ImGui::DragFloat("Radius", &sphere.Radius, 0.01f);
+			resetAccumulationFrame |= ImGui::DragInt("Material", &sphere.MaterialIndex, 1, 0, m_Scene.Materials.size() - 1);
 			
 			ImGui::Separator();
 			ImGui::PopID();
@@ -91,13 +94,16 @@ namespace RayTracing {
 			
 			Material& mat = m_Scene.Materials[i];
 			
-			ImGui::ColorEdit3("Albedo", glm::value_ptr(mat.Albedo), 0.01f);
-			ImGui::DragFloat("Roughness", &mat.Roughness, 0.05f, 0.0f, 1.0f);
-			ImGui::DragFloat("Metallic", &mat.Metallic, 0.05f, 0.0f, 1.0f);
+			resetAccumulationFrame |= ImGui::ColorEdit3("Albedo", glm::value_ptr(mat.Albedo), 0.01f);
+			resetAccumulationFrame |= ImGui::DragFloat("Roughness", &mat.Roughness, 0.05f, 0.0f, 1.0f);
+			resetAccumulationFrame |= ImGui::DragFloat("Metallic", &mat.Metallic, 0.05f, 0.0f, 1.0f);
 			
 			ImGui::Separator();
 			ImGui::PopID();
 		}
+
+		if (resetAccumulationFrame)
+			m_Renderer.ResetAccumulationFrame();
 
 		ImGui::End();
 
@@ -115,6 +121,15 @@ namespace RayTracing {
 			RenderImage();
 		}
 		
+		ImGui::Separator();
+		
+		ImGui::Checkbox("Accumulate", &m_Renderer.GetSettings().Accumulate);
+
+		if (ImGui::Button("Reset Accumilation"))
+		{
+			m_Renderer.ResetAccumulationFrame();
+		}
+
 		ImGui::Separator();
 
 		ImGui::DragInt("Bounces", &m_Renderer.m_Bounces, 1.0f, 1, 100);

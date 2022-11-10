@@ -35,10 +35,18 @@ namespace RayTracing {
 
 		delete[] m_ImageData;
 		m_ImageData = new uint32_t[width * height];
+
+		delete[] m_AccumulationData;
+		m_AccumulationData = new glm::vec4[width * height];
+
+		ResetAccumulationFrame();
 	}
 
 	void Renderer::Render(const Scene& scene, const Camera& camera)
 	{
+		if (m_AccumulationFrame == 1)
+			memset(m_AccumulationData, 0, m_FinalImage->GetWidth() * m_FinalImage->GetHeight() * sizeof(glm::vec4));
+
 		m_ActiveScene = &scene;
 		m_ActiveCamera = &camera;
 
@@ -47,14 +55,20 @@ namespace RayTracing {
 		{
 			for (uint32_t x = 0; x < m_FinalImage->GetWidth(); x++)
 			{		
-				glm::vec4 colorFloat = RayGen(x, y);
+				m_AccumulationData[x + y * m_FinalImage->GetWidth()] += RayGen(x, y);
 
-				colorFloat = glm::clamp(colorFloat, glm::vec4(0.0f), glm::vec4(1.0f));
-				m_ImageData[x + y * m_FinalImage->GetWidth()] = Utils::ConvertToRGBA8(colorFloat);
+				glm::vec4 accumulatedColor = m_AccumulationData[x + y * m_FinalImage->GetWidth()] / (float)m_AccumulationFrame;
+				accumulatedColor = glm::clamp(accumulatedColor, glm::vec4(0.0f), glm::vec4(1.0f));
+				m_ImageData[x + y * m_FinalImage->GetWidth()] = Utils::ConvertToRGBA8(accumulatedColor);
 			}
 		}
 
 		m_FinalImage->SetData(m_ImageData);
+
+		if (m_Settings.Accumulate)
+			m_AccumulationFrame++;
+		else
+			m_AccumulationFrame = 1;
 	}
 
 	glm::vec4 Renderer::RayGen(uint32_t x, uint32_t y)
