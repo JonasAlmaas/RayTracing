@@ -61,7 +61,7 @@ namespace RayTracing {
 		uint32_t* m_ImageData = nullptr;
 		glm::vec4* m_AccumulationData = nullptr;
 		
-		uint32_t m_accumulationFrame = 1;
+		uint32_t m_AccumulationFrame = 1;
 
 	};
 
