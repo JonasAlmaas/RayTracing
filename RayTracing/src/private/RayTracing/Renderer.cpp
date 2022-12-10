@@ -1,5 +1,7 @@
 #include "RayTracing/Renderer.h"
 
+#include <execution>
+
 #include <Walnut/Random.h>
 
 
@@ -39,6 +41,15 @@ namespace RayTracing {
 		delete[] m_AccumulationData;
 		m_AccumulationData = new glm::vec4[width * height];
 
+		m_ImageHorizontalIter.resize(width);
+		m_ImageVerticalIter.resize(height);
+
+		for (uint32_t i = 0; i < width; i++)
+			m_ImageHorizontalIter[i] = i;
+
+		for (uint32_t i = 0; i < height; i++)
+			m_ImageVerticalIter[i] = i;
+
 		ResetAccumulationFrame();
 	}
 
@@ -50,6 +61,23 @@ namespace RayTracing {
 		m_ActiveScene = &scene;
 		m_ActiveCamera = &camera;
 
+	#define MT 1
+	#if MT
+		// Y firt to save on CPU cache
+		std::for_each(std::execution::par, m_ImageVerticalIter.begin(), m_ImageVerticalIter.end(),
+			[this](uint32_t y)
+			{
+				std::for_each(std::execution::par, m_ImageHorizontalIter.begin(), m_ImageHorizontalIter.end(),
+					[this, y](uint32_t x)
+					{
+						m_AccumulationData[x + y * m_FinalImage->GetWidth()] += RayGen(x, y);
+
+						glm::vec4 accumulatedColor = m_AccumulationData[x + y * m_FinalImage->GetWidth()] / (float)m_AccumulationFrame;
+						accumulatedColor = glm::clamp(accumulatedColor, glm::vec4(0.0f), glm::vec4(1.0f));
+						m_ImageData[x + y * m_FinalImage->GetWidth()] = Utils::ConvertToRGBA8(accumulatedColor);
+					});
+			});
+	#else
 		// Y firt to save on CPU cache
 		for (uint32_t y = 0; y < m_FinalImage->GetHeight(); y++)
 		{
@@ -62,6 +90,7 @@ namespace RayTracing {
 				m_ImageData[x + y * m_FinalImage->GetWidth()] = Utils::ConvertToRGBA8(accumulatedColor);
 			}
 		}
+	#endif
 
 		m_FinalImage->SetData(m_ImageData);
 
