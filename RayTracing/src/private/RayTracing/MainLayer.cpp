@@ -115,6 +115,7 @@ namespace RayTracing {
 		ImGui::Begin("Settings");
 
 		ImGui::Text("Last Render: %.3fms", m_LastRenderTime);
+		ImGui::Text("FPS: %.1f", 1000.0f / m_LastRenderTime);
 
 		if (ImGui::Button("Render"))
 		{

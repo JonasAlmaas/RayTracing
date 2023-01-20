@@ -2,7 +2,7 @@
 
 #include <execution>
 
-#include <Walnut/Random.h>
+#include "RayTracing/Core/Random.h"
 
 
 namespace RayTracing {
@@ -136,7 +136,7 @@ namespace RayTracing {
 			ray.Origin = payload.WorldPosition + payload.WorldNormal * 0.0001f;
 			
 			ray.Direction = glm::reflect(ray.Direction,
-				payload.WorldNormal + material.Roughness * Walnut::Random::Vec3(-0.5, 0.5));
+				payload.WorldNormal + material.Roughness * Random::Vec3(-0.5, 0.5));
 		}
 
 		return glm::vec4(color, 1.0f);
