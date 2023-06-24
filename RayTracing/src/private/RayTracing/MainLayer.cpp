@@ -62,27 +62,27 @@ namespace RayTracing {
 
 		ImGui::Begin("Viewport");
 
-		m_ViewportWidth = ImGui::GetContentRegionAvail().x;
-		m_ViewportHeight = ImGui::GetContentRegionAvail().y;
-
+		m_ViewportWidth = (uint32_t)ImGui::GetContentRegionAvail().x;
+		m_ViewportHeight = (uint32_t)ImGui::GetContentRegionAvail().y;
+		
 		auto image = m_Renderer.GetFinalImage();
 		if (image)
 			ImGui::Image(image->GetDescriptorSet(), {(float)image->GetWidth(), (float)image->GetHeight()}, { 0, 1 }, { 1, 0 });
-
+		
 		ImGui::End();
-
+		
 		ImGui::Begin("Scene");
 
 		bool resetAccumulationFrame = false;
 
 		for (size_t i = 0; i < m_Scene.Spheres.size(); i++)
 		{
-			ImGui::PushID(i);
+			ImGui::PushID((int)i);
 
 			Sphere& sphere = m_Scene.Spheres[i];
 			resetAccumulationFrame |= ImGui::DragFloat3("Position", glm::value_ptr(sphere.Position), 0.01f);
 			resetAccumulationFrame |= ImGui::DragFloat("Radius", &sphere.Radius, 0.01f);
-			resetAccumulationFrame |= ImGui::DragInt("Material", &sphere.MaterialIndex, 1, 0, m_Scene.Materials.size() - 1);
+			resetAccumulationFrame |= ImGui::DragInt("Material", &sphere.MaterialIndex, 1, 0, (int)m_Scene.Materials.size() - 1);
 			
 			ImGui::Separator();
 			ImGui::PopID();
@@ -90,11 +90,11 @@ namespace RayTracing {
 
 		for (size_t i = 0; i < m_Scene.Materials.size(); i++)
 		{
-			ImGui::PushID(i);
+			ImGui::PushID((int)i);
 			
 			Material& mat = m_Scene.Materials[i];
 			
-			resetAccumulationFrame |= ImGui::ColorEdit3("Albedo", glm::value_ptr(mat.Albedo), 0.01f);
+			resetAccumulationFrame |= ImGui::ColorEdit3("Albedo", glm::value_ptr(mat.Albedo));
 			resetAccumulationFrame |= ImGui::DragFloat("Roughness", &mat.Roughness, 0.05f, 0.0f, 1.0f);
 			resetAccumulationFrame |= ImGui::DragFloat("Metallic", &mat.Metallic, 0.05f, 0.0f, 1.0f);
 			
@@ -130,9 +130,9 @@ namespace RayTracing {
 		{
 			m_Renderer.ResetAccumulationFrame();
 		}
-
+		
 		ImGui::Separator();
-
+		
 		ImGui::DragInt("Bounces", &m_Renderer.m_Bounces, 1.0f, 1, 100);
 
 		ImGui::End();
