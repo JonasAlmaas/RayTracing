@@ -61,8 +61,6 @@ namespace RayTracing {
 		m_ActiveScene = &scene;
 		m_ActiveCamera = &camera;
 
-	#define MT 1
-	#if MT
 		// Y firt to save on CPU cache
 		std::for_each(std::execution::par, m_ImageVerticalIter.begin(), m_ImageVerticalIter.end(),
 			[this](uint32_t y)
@@ -70,27 +68,15 @@ namespace RayTracing {
 				std::for_each(std::execution::par, m_ImageHorizontalIter.begin(), m_ImageHorizontalIter.end(),
 					[this, y](uint32_t x)
 					{
-						m_AccumulationData[x + y * m_FinalImage->GetWidth()] += RayGen(x, y);
+						uint32_t index = x + y * m_FinalImage->GetWidth();
+		
+						m_AccumulationData[index] += RayGen(x, y);
 
-						glm::vec4 accumulatedColor = m_AccumulationData[x + y * m_FinalImage->GetWidth()] / (float)m_AccumulationFrame;
+						glm::vec4 accumulatedColor = m_AccumulationData[index] / (float)m_AccumulationFrame;
 						accumulatedColor = glm::clamp(accumulatedColor, glm::vec4(0.0f), glm::vec4(1.0f));
-						m_ImageData[x + y * m_FinalImage->GetWidth()] = Utils::ConvertToRGBA8(accumulatedColor);
+						m_ImageData[index] = Utils::ConvertToRGBA8(accumulatedColor);
 					});
 			});
-	#else
-		// Y firt to save on CPU cache
-		for (uint32_t y = 0; y < m_FinalImage->GetHeight(); y++)
-		{
-			for (uint32_t x = 0; x < m_FinalImage->GetWidth(); x++)
-			{		
-				m_AccumulationData[x + y * m_FinalImage->GetWidth()] += RayGen(x, y);
-
-				glm::vec4 accumulatedColor = m_AccumulationData[x + y * m_FinalImage->GetWidth()] / (float)m_AccumulationFrame;
-				accumulatedColor = glm::clamp(accumulatedColor, glm::vec4(0.0f), glm::vec4(1.0f));
-				m_ImageData[x + y * m_FinalImage->GetWidth()] = Utils::ConvertToRGBA8(accumulatedColor);
-			}
-		}
-	#endif
 
 		m_FinalImage->SetData(m_ImageData);
 
@@ -106,9 +92,8 @@ namespace RayTracing {
 		ray.Origin = m_ActiveCamera->GetPosition();
 		ray.Direction = m_ActiveCamera->GetRayDirections()[x + y * m_FinalImage->GetWidth()];
 
-		glm::vec3 color(0.0f);
-
-		float multiplier = 1.0f;
+		glm::vec3 light(0.0f);
+		glm::vec3 contribution{ 1.0f };
 
 		for (uint32_t i = 0; i < m_Bounces; i++)
 		{
@@ -117,29 +102,22 @@ namespace RayTracing {
 			if (payload.HitDistace < 0.0f)
 			{
 				glm::vec3 skyColor = glm::vec4(0.6f, 0.7f, 0.9f, 1.0f);
-				color += skyColor * multiplier;
+				//light += skyColor * contribution;
 				break;
 			}
-
-			glm::vec3 lightDir = glm::normalize(glm::vec3(-1, -1, -1));
-			float lightIntensity = glm::max(glm::dot(payload.WorldNormal, -lightDir), 0.0f);
-
+			
 			const Sphere& sphere = m_ActiveScene->Spheres[payload.OjectIndex];
 			const Material& material = m_ActiveScene->Materials[sphere.MaterialIndex];
 		 
-			glm::vec3 sphereColor = material.Albedo;
-			sphereColor *= lightIntensity;
-
-			color += sphereColor * multiplier;
-			multiplier *= 0.7f;
-
-			ray.Origin = payload.WorldPosition + payload.WorldNormal * 0.0001f;
+			contribution *= material.Albedo;
+			light += material.GetEmission();
 			
-			ray.Direction = glm::reflect(ray.Direction,
-				payload.WorldNormal + material.Roughness * Random::Vec3(-0.5, 0.5));
+			ray.Origin = payload.WorldPosition + payload.WorldNormal * 0.0001f;
+			ray.Direction = glm::reflect(ray.Direction, payload.WorldNormal + material.Roughness * Random::Vec3(-0.5, 0.5));
+			//ray.Direction = glm::normalize(Random::InUnitSphere() + payload.WorldNormal);
 		}
 
-		return glm::vec4(color, 1.0f);
+		return glm::vec4(light, 1.0f);
 	}
 
 	Renderer::HitPayload Renderer::TraceRay(const Ray& ray)

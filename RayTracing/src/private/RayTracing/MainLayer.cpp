@@ -10,25 +10,46 @@ namespace RayTracing {
 	MainLayer::MainLayer()
 		: m_Camera(45.0f, 0.1f, 100.0f)
 	{
-		// Pink
-		{
+		/*
+		 * Materials
+		 */
+
+		{ // Pink
 			Material& mat = m_Scene.Materials.emplace_back();
 			mat.Albedo = { 1.0f, 0.0f, 1.0f };
 			mat.Roughness = 0.1f;
 		}
 
-		// Blue
-		{
+		{ // Blue
 			Material& mat = m_Scene.Materials.emplace_back();
 			mat.Albedo = { 0.2f, 0.3f, 0.9f };
 			mat.Roughness = 0.1f;
 		}
 
+		{ // Glowing Orage
+			Material& mat = m_Scene.Materials.emplace_back();
+			mat.Albedo = { 0.8f, 0.5f, 0.2f };
+			mat.Roughness = 0.1f;
+			mat.EmissionColor = mat.Albedo;
+			mat.EmissionPower = 2.0f;
+		}
+		
+		/*
+		 * Geometry
+		 */
 		{
 			Sphere sphere;
 			sphere.Position = { 0.0f, 0.0f, 0.0f };
 			sphere.Radius = 1.0f;
 			sphere.MaterialIndex = 0;
+			m_Scene.Spheres.push_back(sphere);
+		}
+
+		{
+			Sphere sphere;
+			sphere.Position = { 2.0f, 0.0f, 0.0f };
+			sphere.Radius = 1.0f;
+			sphere.MaterialIndex = 2;
 			m_Scene.Spheres.push_back(sphere);
 		}
 
@@ -97,6 +118,8 @@ namespace RayTracing {
 			resetAccumulationFrame |= ImGui::ColorEdit3("Albedo", glm::value_ptr(mat.Albedo));
 			resetAccumulationFrame |= ImGui::DragFloat("Roughness", &mat.Roughness, 0.05f, 0.0f, 1.0f);
 			resetAccumulationFrame |= ImGui::DragFloat("Metallic", &mat.Metallic, 0.05f, 0.0f, 1.0f);
+			resetAccumulationFrame |= ImGui::ColorEdit3("Emission Color", glm::value_ptr(mat.EmissionColor));
+			resetAccumulationFrame |= ImGui::DragFloat("Emission Power", &mat.EmissionPower, 0.05f, 0.0f, FLT_MAX);
 			
 			ImGui::Separator();
 			ImGui::PopID();
@@ -133,7 +156,10 @@ namespace RayTracing {
 		
 		ImGui::Separator();
 		
-		ImGui::DragInt("Bounces", &m_Renderer.m_Bounces, 1.0f, 1, 100);
+		if (ImGui::DragInt("Bounces", &m_Renderer.m_Bounces, 1.0f, 1, 100))
+		{
+			m_Renderer.ResetAccumulationFrame();
+		}
 
 		ImGui::End();
 	}
